@@ -1,0 +1,1 @@
+{"Id": "MyTestTeam","Name": "My Test Team","Description": "Here's a description","ParentTeamId": "","TeamCodeForBulkImport": "BulkCode"}

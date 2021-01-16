@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WebLink xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Update_Team</fullName>
+    <availability>online</availability>
+    <description>Update Team with description and team members, including admins and leaders</description>
+    <displayType>button</displayType>
+    <encodingKey>UTF-8</encodingKey>
+    <height>600</height>
+    <linkType>url</linkType>
+    <masterLabel>Update Team</masterLabel>
+    <openType>noSidebar</openType>
+    <protected>false</protected>
+    <url>/flow/Update_selected_Litmos_team?teamIds={!Litmos_Team__c.Id}&amp;retURL=/{!Litmos_Team__c.Id}</url>
+</WebLink>
