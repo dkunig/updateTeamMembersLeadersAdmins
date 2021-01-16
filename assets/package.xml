@@ -7,6 +7,7 @@
         <members>litmosTeamMemberQueue</members>
         <members>litmosTeamLeaderQueue</members>
         <members>litmosTeamAdminQueue</members>
+        <members>litmosAddTeamMembers</members>
         <name>ApexClass</name>
     </types>
     <types>
@@ -14,15 +15,18 @@
         <name>Flow</name>
     </types>
     <types>
-        <members>Update_Team</members>
+        <members>Litmos_Team__c.Update_Team</members>
         <name>WebLink</name>
     </types>
     <types>
-        <members>Litmos_Team_Layout</members>
+        <members>Litmos_Team__c-Litmos Team Layout</members>
         <name>Layout</name>
     </types>
     <types>
         <members>Litmos_Team_Leader_Updates_Demand</members>
+        <members>Litmos_Team_Member_Updates_Demand</members>
+        <members>Litmos_Team_Admin_Updates_Demand</members>
+        <members>Litmos_Team_Description_Updates_Demand</members>
         <name>StaticResource</name>
     </types>
     <version>50.0</version>
