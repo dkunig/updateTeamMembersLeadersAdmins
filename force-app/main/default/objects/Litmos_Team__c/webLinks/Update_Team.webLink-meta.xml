@@ -10,5 +10,5 @@
     <masterLabel>Update Team</masterLabel>
     <openType>noSidebar</openType>
     <protected>false</protected>
-    <url>/flow/Update_selected_Litmos_team?teamIds={!Litmos_Team__c.Id}&amp;retURL=/{!Litmos_Team__c.Id}</url>
+    <url>/flow/Update_selected_Litmos_team?recordId={!Litmos_Team__c.Id}&amp;retURL=/{!Litmos_Team__c.Id}</url>
 </WebLink>

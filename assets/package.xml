@@ -2,12 +2,16 @@
 <Package xmlns="http://soap.force.com/2006/04/metadata">
     <types>
         <members>litmosUpdateTeam</members>
-        <members>litmosUpdateTeamTEST</members>
+        <!--<members>litmosUpdateTeamTEST</members>-->
         <members>litmosUpdateTeamDescriptionQueue</members>
         <members>litmosTeamMemberQueue</members>
         <members>litmosTeamLeaderQueue</members>
         <members>litmosTeamAdminQueue</members>
         <members>litmosAddTeamMembers</members>
+        <members>litmosTeamMemberUpdateTEST</members>
+        <members>litmosTeamLeaderUpdateTEST</members>
+        <members>litmosTeamAdminUpdateTEST</members>
+        <members>litmosTeamDescriptionUpdateTEST</members>
         <name>ApexClass</name>
     </types>
     <types>
@@ -27,6 +31,9 @@
         <members>Litmos_Team_Member_Updates_Demand</members>
         <members>Litmos_Team_Admin_Updates_Demand</members>
         <members>Litmos_Team_Description_Updates_Demand</members>
+        <!--<members>Litmos_Team_Admin_Updates_Demand_B</members>
+        <members>Litmos_Team_Leader_Updates_Demand_B</members>
+        <members>Litmos_Team_Member_Updates_Demand_B</members>-->
         <name>StaticResource</name>
     </types>
     <version>50.0</version>

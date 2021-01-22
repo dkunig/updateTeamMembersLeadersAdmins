@@ -15,7 +15,7 @@ public class litmosUpdateTeamTEST {
         	FirstName = 'Learner 1',
             LastName = 'Test Learner 1',
             Litmos__OriginalId__c = 13488946,
-            Litmos__LitmosUserId__c = 'NotOnTeam',
+            Litmos__LitmosUserId__c = 'NotOnTeamLeader',
             ProfileId = standardUser.Id,
             isActive = true,
             email='learner1@learner1.com',
@@ -50,6 +50,21 @@ public class litmosUpdateTeamTEST {
             email='learner3@learner3.com',
             Username='learner3@learner3.com',
             alias='lear3',
+            TimeZoneSidKey='America/New_York',
+            LocaleSidKey='en_US',
+            EmailEncodingKey='UTF-8',
+            LanguageLocaleKey='en_US'
+        );
+        User learner4 = new User(
+        	FirstName = 'Learner 4',
+            LastName = 'Test Promote to Admin and Add to team',
+            Litmos__OriginalId__c = 11223344,
+            Litmos__LitmosUserId__c = 'NotOnTeamAdmin',
+            ProfileId = standardUser.Id,
+            isActive = true,
+            email='learner4@learner4.com',
+            Username='learner4@learner4.com',
+            alias='lear4',
             TimeZoneSidKey='America/New_York',
             LocaleSidKey='en_US',
             EmailEncodingKey='UTF-8',
@@ -178,6 +193,7 @@ public class litmosUpdateTeamTEST {
         users.add(learner1);
         users.add(learner2);
         users.add(learner3);
+        users.add(learner4);
         users.add(leader1);
         users.add(leader2);
         users.add(leader3);
@@ -260,23 +276,38 @@ public class litmosUpdateTeamTEST {
         //at the end of this test, there should be 3 learners and one learner removed
         Litmos__Configuration__c config = [SELECT Litmos__Api_End_Point__c, Litmos__Api_Key__c FROM Litmos__Configuration__c LIMIT 1];
         //check that member 2 is on the team
-        Litmos_Team__c team = [SELECT Id FROM Litmos_Team__c LIMIT 1];
-        System.assertNotEquals(null, [SELECT Id FROM Litmos_Team_Member__c WHERE Litmos_Team__c =: team.Id AND Litmos_User_Id__c ='RemoveMember'], 'Expected 1 team member with Litmos Id \'RemoveMember\'');
+        List<Litmos_Team__c> teams = [SELECT Id,Litmos_Id__c FROM Litmos_Team__c];
+        System.assertNotEquals(null, [SELECT Id FROM Litmos_Team_Member__c WHERE Litmos_Team__c =: teams[0].Id AND Litmos_User_Id__c ='RemoveMember'], 'Expected 1 team member with Litmos Id \'RemoveMember\'');
         //set up mock
-        StaticResourceCalloutMock mock = new StaticResourceCalloutMock();
-        mock.setStaticResource('Litmos_Team_Member_Updates_Demand');
-        mock.setStatusCode(200);
-        mock.setHeader(config.Litmos__API_End_Point__c + team.Id + '/users?source=sourceapp&format=json', config.Litmos__API_Key__c);
-        Test.setMock(HttpCalloutMock.class, mock);
+        MultiStaticResourceCalloutMock multimock = new MultiStaticResourceCalloutMock();
+        multimock.setStaticResource(config.Litmos__API_End_Point__c + 'teams/' + teams[0].Litmos_Id__c + '/users?source=sourceapp&format=json&limit=1000', 'Litmos_Team_Member_Updates_Demand');
+        multimock.setStaticResource(config.Litmos__API_End_Point__c + 'teams/' + teams[0].Litmos_Id__c + '/leaders?source=sourceapp&format=json', 'Litmos_Team_Leader_Updates_Demand');
+		multimock.setStaticResource(config.Litmos__API_End_Point__c + 'teams/' + teams[0].Litmos_Id__c + '/admins?source=sourceapp&format=json', 'Litmos_Team_Admin_Updates_Demand');
+       	multimock.setStaticResource(config.Litmos__API_End_Point__c + 'teams/' + teams[0].Litmos_Id__c + '?source=sourceapp&format=json', 'Litmos_Team_Description_Updates_Demand');
+        multimock.setStatusCode(200);
+        multimock.setHeader('apikey', config.Litmos__API_Key__c);
         Test.startTest();
-        litmosUpdateTeam.updateTeam(new List<Id>{team.Id});
+        Test.setMock(HttpCalloutMock.class, multimock);
+        litmosUpdateTeam.updateTeam(teams);
         Test.stopTest();
+        //MEMBER ASSERTIONS
         //confirm member1 is on team (3 learners total)
-        System.assertEquals(3, [SELECT count() FROM Litmos_Team_Member__c WHERE Member_Type__c = 'Learner' AND Litmos_Team__c =: team.Id], 'Expected 3 learners on team');
+        System.assertEquals(3, [SELECT count() FROM Litmos_Team_Member__c WHERE Member_Type__c = 'Learner' AND Litmos_Team__c =: teams[0].Id], 'Expected 3 learners on team');
         //confirm member2 is removed from team
-        System.assertEquals(0, [SELECT count() FROM Litmos_Team_Member__c WHERE Litmos_Team__c =: team.Id AND Litmos_User_Id__c ='RemoveMember'], 'Expected no team member with Litmos Id \'RemoveMember\'');
+        System.assertEquals(0, [SELECT count() FROM Litmos_Team_Member__c WHERE Litmos_Team__c =: teams[0].Id AND Litmos_User_Id__c ='RemoveMember'], 'Expected no team member with Litmos Id \'RemoveMember\'');
+        //LEADER ASSERTIONS
+        //check number of leaders
+        System.assertEquals(4,[SELECT count() FROM Litmos_Team_Member__c WHERE Member_Type__c = 'Leader' AND Litmos_Team__c =: teams[0].Id], 'Expected 4 leaders');
+        //ADMIN ASSERTIONS
+        //check number of admins
+        System.assertEquals(4, [SELECT count() FROM Litmos_Team_Member__c WHERE Litmos_Team__c =: teams[0].Id AND Member_Type__c = 'Admin'], 'Expected 4 admins');
+        //confirm user demotion to learner
+        System.assertEquals(1, [SELECT count() FROM Litmos_Team_Member__c WHERE Litmos_User_Id__c = 'DemoteAdmin' AND Member_Type__c = 'Learner'], 'Expected team member with Litmos Id \'DemoteAdmin\' to now have Member Type of \'Learner\'');
+        //DESCRIPTION ASSERTIONS
+        //confirm team now has a description
+        System.assertEquals('Here\'s a description', [SELECT Id,Description__c FROM Litmos_Team__c LIMIT 1].Description__c);
     }
-    @isTest
+    /*@isTest
     static void testUpdateLeaders() {
         System.debug('testUpdateLeaders() method');
         Litmos__Configuration__c config = [SELECT Litmos__Api_End_Point__c, Litmos__Api_Key__c FROM Litmos__Configuration__c LIMIT 1];
@@ -286,9 +317,10 @@ public class litmosUpdateTeamTEST {
         mock.setStatusCode(200);
         mock.setHeader('apikey', config.Litmos__Api_Key__c);
 
-        Test.setMock(HttpCalloutMock.class, mock);
+        
 		Litmos_Team__c team = [SELECT Id FROM Litmos_Team__c LIMIT 1];
         Test.startTest();
+        //Test.setMock(HttpCalloutMock.class, new Mock());
         litmosTeamLeaderQueue leaderqueue = new litmosTeamLeaderQueue(team, config.Litmos__API_End_Point__c + team.Id + '/leaders?source=sourceapp&format=json', config.Litmos__API_Key__c);
         Id jobId = System.enqueueJob(leaderqueue);
         Test.stopTest();
@@ -312,8 +344,9 @@ public class litmosUpdateTeamTEST {
         mock.setStatusCode(200);
         mock.setHeader('apikey', config.Litmos__API_Key__c);
         
-        Test.setMock(HttpCalloutMock.class, mock);
+        
         Test.startTest();
+        Test.setMock(HttpCalloutMock.class, new Mock());
         litmosTeamAdminQueue adminQueue = new litmosTeamAdminQueue(team, config.Litmos__API_End_Point__c + team.Id + '/admins?source=sourceapp&format=json', config.Litmos__API_Key__c);
         Id jobId = System.enqueueJob(adminQueue);
         Test.stopTest();
@@ -334,12 +367,13 @@ public class litmosUpdateTeamTEST {
         mock.setHeader('apikey', config.Litmos__API_Key__c);
         mock.setStaticResource('Litmos_Team_Description_Updates_Demand');
         
-        Test.setMock(HttpCalloutMock.class, mock);
+        
         Test.startTest();
+        Test.setMock(HttpCalloutMock.class, new Mock());
         litmosUpdateTeamDescriptionQueue descQueue = new litmosUpdateTeamDescriptionQueue(team, config.Litmos__API_End_Point__c + team.Id + '?source=sourceapp&format=json', config.Litmos__Api_Key__c);
         Id jobId = System.enqueueJob(descQueue);
         Test.stopTest();
         //confirm team now has a description
         System.assertEquals('Here\'s a description', [SELECT Id,Description__c FROM Litmos_Team__c LIMIT 1].Description__c);
-    }
+    }*/
 }
