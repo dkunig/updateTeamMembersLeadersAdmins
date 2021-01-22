@@ -4,13 +4,13 @@
         <name>Update_selected_Litmos_Team</name>
         <label>Update selected Litmos Team</label>
         <locationX>176</locationX>
-        <locationY>158</locationY>
+        <locationY>278</locationY>
         <actionName>litmosUpdateTeam</actionName>
         <actionType>apex</actionType>
         <inputParameters>
-            <name>teamIds</name>
+            <name>teams</name>
             <value>
-                <elementReference>teamIds</elementReference>
+                <elementReference>Get_Team_that_Started_the_Flow</elementReference>
             </value>
         </inputParameters>
     </actionCalls>
@@ -37,19 +37,43 @@
         </value>
     </processMetadataValues>
     <processType>AutoLaunchedFlow</processType>
+    <recordLookups>
+        <name>Get_Team_that_Started_the_Flow</name>
+        <label>Get Team that Started the Flow</label>
+        <locationX>176</locationX>
+        <locationY>158</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Update_selected_Litmos_Team</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>recordId</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>Litmos_Team__c</object>
+        <queriedFields>Id</queriedFields>
+        <queriedFields>Litmos_Id__c</queriedFields>
+        <queriedFields>Description__c</queriedFields>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
     <start>
         <locationX>50</locationX>
         <locationY>0</locationY>
         <connector>
-            <targetReference>Update_selected_Litmos_Team</targetReference>
+            <targetReference>Get_Team_that_Started_the_Flow</targetReference>
         </connector>
     </start>
-    <status>Active</status>
+    <status>Draft</status>
     <variables>
-        <name>teamIds</name>
+        <name>recordId</name>
         <dataType>String</dataType>
         <isCollection>false</isCollection>
         <isInput>true</isInput>
-        <isOutput>true</isOutput>
+        <isOutput>false</isOutput>
     </variables>
 </Flow>
